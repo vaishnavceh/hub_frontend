@@ -34,10 +34,11 @@ export default function LoginPage() {
       const tokenRes = await api.post<TokenResponse>("/auth/login", data);
       const { access_token, refresh_token } = tokenRes.data;
 
+      // Temporarily set tokens in the store so the next request is authenticated
+      useAuthStore.getState().setTokens(access_token, refresh_token);
+
       // Fetch current user profile
-      const userRes = await api.get<User>("/auth/me", {
-        headers: { Authorization: `Bearer ${access_token}` },
-      });
+      const userRes = await api.get<User>("/auth/me");
 
       setAuth(userRes.data, access_token, refresh_token);
       router.push("/chat");

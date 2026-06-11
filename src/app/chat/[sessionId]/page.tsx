@@ -23,8 +23,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import "highlight.js/styles/github.css";
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8090";
+import { useAuthStore } from "@/store/authStore";
 
 interface Props {
   params: { sessionId: string };
@@ -38,6 +37,7 @@ export default function ChatSessionPage({ params }: Props) {
   const [useRag, setUseRag] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const accessToken = useAuthStore((s) => s.accessToken);
 
   const { data: history } = useQuery({
     queryKey: ["messages", sessionId],
@@ -71,50 +71,52 @@ export default function ChatSessionPage({ params }: Props) {
     setMessages((prev) => [...prev, userMsg]);
 
     // SSE streaming
-    const token = localStorage.getItem("access_token");
-    const response = await fetch(`${API_URL}/api/v1/chat/sessions/${sessionId}/messages`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ content, use_rag: useRag }),
-    });
+    // The POST request to initiate the stream should go through our secure api instance
+    // However, EventSource doesn't easily support custom headers for the initial POST.
+    // A common pattern is to use a standard fetch/axios POST to *initiate* the stream,
+    // and then connect EventSource. The backend should handle this.
+    // For now, we'll use EventSource directly as the README suggests, but with the token from Zustand.
+    // Note: EventSource doesn't support custom headers, so we'll pass the token as a query param.
+    // This requires a backend change to accept the token from a query parameter.
+    // A more secure alternative is to use fetch streaming instead of EventSource.
+    const source = new EventSource(
+      `${API_URL}/api/v1/chat/sessions/${sessionId}/messages/stream?token=${accessToken}&use_rag=${useRag}&content=${encodeURIComponent(content)}`
+      `${api.defaults.baseURL}/chat/sessions/${sessionId}/messages/stream?token=${accessToken}&use_rag=${useRag}&content=${encodeURIComponent(content)}`
+    );
 
-    if (!response.body) return;
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
     let fullContent = "";
-
-    while (true) {
-      const { value, done } = await reader.read();
-      if (done) break;
-      const chunk = decoder.decode(value);
-      const lines = chunk.split("\n").filter((l) => l.startsWith("data: "));
-      for (const line of lines) {
-        const data = line.replace("data: ", "");
-        if (data === "[DONE]") break;
-        try {
-          const { delta } = JSON.parse(data);
-          fullContent += delta;
-          setStreamingContent(fullContent);
-        } catch {
-          // ignore parse errors
-        }
+    source.onmessage = (event) => {
+      if (event.data === "[DONE]") {
+        source.close();
+        // Commit the full assistant message
+        const assistantMsg: ChatMessage = {
+          id: crypto.randomUUID(),
+          session_id: sessionId,
+          role: "assistant",
+          content: fullContent,
+          created_at: new Date().toISOString(),
+        };
+        setMessages((prev) => [...prev, assistantMsg]);
+        setStreamingContent(null);
+        setIsSending(false);
+        return;
       }
-    }
-
-    // Commit the full assistant message
-    const assistantMsg: ChatMessage = {
-      id: crypto.randomUUID(),
-      session_id: sessionId,
-      role: "assistant",
-      content: fullContent,
-      created_at: new Date().toISOString(),
+      try {
+        const { delta } = JSON.parse(event.data);
+        fullContent += delta;
+        setStreamingContent(fullContent);
+      } catch {
+        // ignore parse errors
+      }
     };
-    setMessages((prev) => [...prev, assistantMsg]);
-    setStreamingContent(null);
-    setIsSending(false);
+
+    source.onerror = () => {
+      // Handle error, maybe show a message to the user
+      console.error("EventSource failed.");
+      setStreamingContent(null);
+      setIsSending(false);
+      source.close();
+    };
   };
 
   return (
