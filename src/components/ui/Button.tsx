@@ -3,8 +3,7 @@ type ButtonProps = {
   onClick?: () => void;
   disabled?: boolean;
   type?: "button" | "submit" | "reset";
-  variant?: "primary" | "secondary" | "danger";
-  size?: "sm" | "md" | "lg";
+  className?: string;
 };
 
 export default function Button({
@@ -12,8 +11,7 @@ export default function Button({
   onClick,
   disabled = false,
   type = "button",
-  variant = "primary",
-  size = "md",
+  className = "",
 }: ButtonProps) {
   const variants = {
     primary:
@@ -35,20 +33,7 @@ export default function Button({
       type={type}
       onClick={onClick}
       disabled={disabled}
-      className={`
-        rounded-lg
-        font-semibold
-        transition-colors
-        duration-150
-        focus:outline-none
-        focus:ring-2
-        focus:ring-cixio-blue
-        focus:ring-offset-2
-        disabled:opacity-50
-        disabled:cursor-not-allowed
-        ${variants[variant]}
-        ${sizes[size]}
-      `}
+      className={`btn-cixio ${className}`}
     >
       {children}
     </button>
