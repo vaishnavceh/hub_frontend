@@ -8,7 +8,7 @@ export default function Tooltip({
   children,
 }: TooltipProps) {
   return (
-    <div className="relative inline-block group">
+    <div className="relative inline-flex group">
       {children}
 
       <div
@@ -18,18 +18,36 @@ export default function Tooltip({
           left-1/2
           -translate-x-1/2
           mb-2
-          hidden
-          group-hover:block
+          opacity-0
+          invisible
+          group-hover:opacity-100
+          group-hover:visible
+          transition-all
+          duration-200
           bg-cixio-dark
           text-white
           text-xs
-          px-2
-          py-1
-          rounded
+          px-3
+          py-2
+          rounded-lg
+          shadow-lg
           whitespace-nowrap
+          z-50
         "
       >
         {text}
+
+        <div
+          className="
+            absolute
+            top-full
+            left-1/2
+            -translate-x-1/2
+            border-4
+            border-transparent
+            border-t-cixio-dark
+          "
+        />
       </div>
     </div>
   );
