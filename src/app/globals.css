@@ -29,19 +29,82 @@ body {
 ::-webkit-scrollbar-thumb { background: var(--cixio-muted); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--cixio-navy); }
 
-/* Cixio button utility */
 @layer components {
   .btn-cixio {
     @apply bg-cixio-blue text-white font-semibold px-5 py-2.5 rounded-lg
            hover:bg-cixio-hover transition-colors duration-150 focus:outline-none
            focus:ring-2 focus:ring-cixio-blue focus:ring-offset-2 disabled:opacity-50;
   }
+
   .card-cixio {
     @apply bg-white rounded-xl border border-cixio-light shadow-sm;
   }
+
   .input-cixio {
     @apply w-full border border-gray-200 rounded-lg px-3 py-2.5 bg-white
            focus:outline-none focus:ring-2 focus:ring-cixio-blue focus:border-cixio-blue
            transition text-sm;
+  }
+
+  .badge-success {
+    @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium bg-green-100 text-green-700;
+  }
+
+  .badge-warning {
+    @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium bg-yellow-100 text-yellow-700;
+  }
+
+  .badge-danger {
+    @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium bg-red-100 text-red-700;
+  }
+
+  .section-cixio {
+    @apply bg-white rounded-xl border border-cixio-light shadow-sm p-6;
+  }
+
+  .page-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .table-cixio {
+    @apply min-w-full divide-y divide-gray-200;
+  }
+
+  .table-cixio th {
+    @apply px-4 py-3 text-left text-sm font-semibold text-cixio-dark;
+  }
+
+  .table-cixio td {
+    @apply px-4 py-3 text-sm text-gray-700;
+  }
+
+  .fade-in {
+    animation: fadeIn 0.25s ease-in-out;
+  }
+
+  .slide-up {
+    animation: slideUp 0.25s ease-out;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
