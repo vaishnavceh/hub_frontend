@@ -79,10 +79,8 @@ export default function ChatSessionPage({ params }: Props) {
     // Note: EventSource doesn't support custom headers, so we'll pass the token as a query param.
     // This requires a backend change to accept the token from a query parameter.
     // A more secure alternative is to use fetch streaming instead of EventSource.
-    const source = new EventSource(
-      `${API_URL}/api/v1/chat/sessions/${sessionId}/messages/stream?token=${accessToken}&use_rag=${useRag}&content=${encodeURIComponent(content)}`
-      `${api.defaults.baseURL}/chat/sessions/${sessionId}/messages/stream?token=${accessToken}&use_rag=${useRag}&content=${encodeURIComponent(content)}`
-    );
+    const streamUrl = `${api.defaults.baseURL}/chat/sessions/${sessionId}/messages/stream?token=${accessToken}&use_rag=${useRag}&content=${encodeURIComponent(content)}`;
+    const source = new EventSource(streamUrl);
 
     let fullContent = "";
     source.onmessage = (event) => {
