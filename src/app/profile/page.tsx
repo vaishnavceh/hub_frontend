@@ -12,7 +12,6 @@ import {
   UserRound,
 } from "lucide-react";
 
-import { useAuthStore } from "@/store/authStore";
 import type { User } from "@/types";
 
 import Button from "@/components/ui/Button";
@@ -22,6 +21,8 @@ import Label from "@/components/ui/Label";
 import Select from "@/components/ui/Select";
 import Badge from "@/components/ui/Badge";
 import Avatar from "@/components/ui/Avatar";
+import { useAuthStore } from "@/store/authStore";
+import api from "@/lib/api";
 
 const fallbackUser: User = {
   id: "mock-user-1",
@@ -53,6 +54,7 @@ const buildProfileForm = (user: User): ProfileForm => ({
 
 export default function ProfilePage() {
   const storeUser = useAuthStore((state) => state.user);
+  const setUser = useAuthStore((state) => state.setUser);
   const profileUser = storeUser ?? fallbackUser;
 
   const [form, setForm] = useState<ProfileForm>(() =>
@@ -87,9 +89,22 @@ export default function ProfilePage() {
     setSaved(false);
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleSubmit = async (
+  event: FormEvent<HTMLFormElement>
+  ) => {
+  event.preventDefault();
+
+  try {
+    const response = await api.put("/auth/profile", {
+      full_name: form.fullName,
+      phone: form.phone,
+    });
+
+    setUser(response.data);
     setSaved(true);
+  } catch (error) {
+    console.error("Failed to update profile", error);
+  }
   };
 
   return (

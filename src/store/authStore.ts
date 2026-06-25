@@ -5,13 +5,28 @@ import type { User } from "@/types";
 interface AuthState {
   user: User | null;
   accessToken: string | null;
-  setAuth: (user: User, accessToken: string, refreshToken: string) => void;
-  setTokens: (accessToken: string, refreshToken: string) => void;
+
+  setAuth: (
+    user: User,
+    accessToken: string,
+    refreshToken: string
+  ) => void;
+
+  setTokens: (
+    accessToken: string,
+    refreshToken: string
+  ) => void;
+
+  setUser: (user: User) => void;
+
   clearAuth: () => void;
   logout: () => void;
 }
 
-const storeTokens = (accessToken: string, refreshToken: string) => {
+const storeTokens = (
+  accessToken: string,
+  refreshToken: string
+) => {
   if (typeof window !== "undefined") {
     localStorage.setItem("access_token", accessToken);
     localStorage.setItem("refresh_token", refreshToken);
@@ -30,23 +45,36 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       user: null,
       accessToken: null,
+
       setAuth: (user, accessToken, refreshToken) => {
         storeTokens(accessToken, refreshToken);
         set({ user, accessToken });
       },
+
       setTokens: (accessToken, refreshToken) => {
         storeTokens(accessToken, refreshToken);
         set({ accessToken });
       },
+
+      setUser: (user) => {
+        set({ user });
+      },
+
       clearAuth: () => {
         clearStoredTokens();
         set({ user: null, accessToken: null });
       },
+
       logout: () => {
         clearStoredTokens();
         set({ user: null, accessToken: null });
       },
     }),
-    { name: "auth-storage", partialize: (s) => ({ user: s.user }) }
+    {
+      name: "auth-storage",
+      partialize: (s) => ({
+        user: s.user,
+      }),
+    }
   )
 );
